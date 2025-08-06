@@ -1,0 +1,480 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+  <style>
+    :root {
+      --neon-green: #39ff14;
+      --neon-blue: #0ff0fc;
+      --neon-pink: #ff2ced;
+      --dark-bg: #0a0a0a;
+      --card-bg: #1a1a1a;
+      --text-primary: #f0f0f0;
+      --text-secondary: #b0b0b0;
+    }
+
+    body {
+      background-color: var(--dark-bg);
+      color: var(--text-primary);
+      font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    @keyframes scanline {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+
+    {% comment %} .scanlines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.03) 0%,
+        rgba(255, 255, 255, 0) 50%,
+        rgba(255, 255, 255, 0.03) 100%
+      );
+      background-size: 100% 8px;
+      pointer-events: none;
+      z-index: 1000;
+      animation: scanline 4s linear infinite;
+    } {% endcomment %}
+
+    h2, h3, h4 {
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    h2 {
+      color: black;
+      text-shadow:
+        0 0 5px var(--neon-green),
+        0 0 10px #002b2b;
+      position: relative;
+      display: inline-block;
+      padding-bottom: 10px;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #002b2b;
+      box-shadow: 0 0 5px #002b2b;
+    }
+
+    .card {
+      background-color: #002b2b;
+      border-left: 4px solid var(--neon-green);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(57, 255, 20, 0.1),
+        transparent
+      );
+      transition: 0.5s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(57, 255, 20, 0.2);
+    }
+
+    .card:hover::before {
+      left: 100%;
+    }
+
+    .card h3 {
+      color: var(--neon-blue);
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .card p {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .btn-neon {
+      background-color: transparent;
+      color: var(--neon-green);
+      font-weight: 600;
+      padding: 0.7rem 1.5rem;
+      border-radius: 6px;
+      border: 2px solid var(--neon-green);
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-neon::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(57, 255, 20, 0.4),
+        transparent
+      );
+      transition: 0.5s;
+    }
+
+    .btn-neon:hover {
+      background-color: rgba(57, 255, 20, 0.1);
+      box-shadow: 0 0 20px var(--neon-green);
+      color: black;
+    }
+
+    .btn-neon:hover::before {
+      left: 100%;
+    }
+
+    .btn-secondary {
+      border-color: var(--neon-blue);
+      color: var(--neon-blue);
+      box-shadow: 0 0 10px rgba(15, 240, 252, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(15, 240, 252, 0.1);
+      box-shadow: 0 0 20px var(--neon-blue);
+    }
+
+    .chart-container {
+      background-color: #002b2b;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-top: 2rem;
+      border-left: 4px solid var(--neon-pink);
+    }
+
+    .dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .recent-activity {
+      margin-top: 2rem;
+    }
+
+    .activity-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .activity-item {
+      padding: 0.3rem;
+      border-left: 3px solid var(--neon-pink);
+      margin-bottom: 0.5rem;
+      background-color: rgba(26, 26, 26, 0.7);
+      transition: all 0.3s ease;
+      color: white;
+    }
+
+    .activity-item:hover {
+      background-color: rgba(26, 26, 26, 0.9);
+      transform: translateX(5px);
+    }
+
+    .activity-time {
+      color: #00f2ff;
+      font-size: 0.8rem;
+      display: block;
+      margin-top: 0.3rem;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+
+    .urgent {
+      animation: pulse 2s infinite;
+      color: var(--neon-pink) !important;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .button-group {
+        width: 100%;
+        flex-direction: column;
+      }
+      
+      .btn-neon {
+        width: 100%;
+      }
+    }
+    .logout-form {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+  }
+
+  .logout-btn {
+    background: rgba(255, 59, 48, 0.1);
+    border: 1px solid rgba(255, 59, 48, 0.3);
+    color: #ff3b30;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 0 10px rgba(255, 59, 48, 0.1);
+  }
+
+  .logout-btn:hover {
+    background: rgba(255, 59, 48, 0.2);
+    box-shadow: 0 0 15px rgba(255, 59, 48, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .logout-btn:active {
+    transform: translateY(0);
+  }
+
+  .logout-btn i {
+    font-size: 0.9rem;
+  }
+
+  /* For dark theme compatibility */
+  .dark .logout-btn {
+    color: #ff5e52;
+    border-color: rgba(255, 94, 82, 0.4);
+  }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<div class="scanlines"></div>
+<form action="{% url 'logout' %}" method="post" class="logout-form">
+  {% csrf_token %}
+  <button type="submit" class="logout-btn">
+    <i class="fas fa-power-off"></i> LOGOUT
+  </button>
+</form>
+{% if messages %}
+  <div class="mb-4">
+    {% for message in messages %}
+      <div class="bg-green-100 border border-green-400 text-green-800 px-4 py-2 rounded mb-2">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+<div class="dashboard-header">
+  <h2>Welcome back, {{ request.user.username }}</h2>
+  <div class="button-group">
+    {% if request.user.role == 'customer' %}
+    <a href="{% url 'create_ticket' %}" class="btn-neon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 8px;">
+        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+      </svg>
+      Create Ticket
+    </a>
+    {% endif %}
+    <a href="{% url 'ticket_list' %}" class="btn-neon btn-secondary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 8px;">
+        <path d="M14 10a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1h12zM2 9a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2H2z"/>
+        <path d="M5 11.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-2 0a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zM14 3a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h12zM2 2a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H2z"/>
+        <path d="M5 4.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-2 0a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+      </svg>
+      View Tickets
+    </a>
+  </div>
+</div>
+
+<div class="dashboard-stats">
+  <div class="card">
+    <h3>Total Tickets</h3>
+    <p>{{ stats.total }}</p>
+  </div>
+  <div class="card">
+    <h3>Open</h3>
+    <p>{{ stats.open }}</p>
+  </div>
+  <div class="card">
+    <h3>In Progress</h3>
+    <p>{{ stats.in_progress }}</p>
+  </div>
+  <div class="card">
+    <h3>Resolved</h3>
+    <p>{{ stats.resolved }}</p>
+  </div>
+  <div class="card">
+    <h3>Closed</h3>
+    <p>{{ stats.closed }}</p>
+  </div>
+  <div class="card">
+    <h3>Urgent</h3>
+    <p class="urgent">{{ stats.urgent }}</p>
+  </div>
+</div>
+
+<div class="chart-container">
+  <canvas id="statusChart"></canvas>
+</div>
+
+<div class="recent-activity">
+  <h3 style="color:black; margin-bottom: 1rem;"><u>Recent Activity</u></h3>
+  <ul id="activity-list" class="activity-list">
+    <!-- AJAX will load items here -->
+  </ul>
+</div>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Animate cards on load
+    anime({
+      targets: '.card',
+      translateY: [20, 0],
+      opacity: [0, 1],
+      delay: anime.stagger(100),
+      duration: 800,
+      easing: 'easeOutExpo'
+    });
+
+    // Chart configuration
+    const ctx = document.getElementById('statusChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Open', 'In Progress', 'Resolved', 'Closed'],
+        datasets: [{
+          data: [{{ stats.open }}, {{ stats.in_progress }}, {{ stats.resolved }}, {{ stats.closed }}],
+          backgroundColor: [
+            'rgba(251, 191, 36, 0.8)',
+            'rgba(251, 146, 60, 0.8)',
+            'rgba(0, 0, 0, 1)',
+            'rgba(156, 163, 175, 0.8)'
+          ],
+          borderColor: [
+            'rgba(251, 191, 36, 1)',
+            'rgba(251, 146, 60, 1)',
+            'rgba(52, 211, 153, 1)',
+            'rgba(156, 163, 175, 1)'
+          ],
+          borderWidth: 2,
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              color: '#f0f0f0',
+              font: {
+                family: 'Rajdhani',
+                size: 14,
+                weight: '600'
+              }
+            }
+          },
+          tooltip: {
+            bodyFont: {
+              family: 'Rajdhani',
+              size: 14,
+              weight: '600'
+            }
+          }
+        },
+        cutout: '65%',
+        animation: {
+          animateScale: true,
+          animateRotate: true
+        }
+      }
+    });
+  });
+    function loadRecentActivity() {
+    fetch('/tickets/api/recent-activities/')
+      .then(response => response.json())
+      .then(data => {
+        const list = document.getElementById('activity-list');
+        list.innerHTML = '';
+        data.activities.forEach(item => {
+          const li = document.createElement('li');
+          li.classList.add('activity-item');
+          li.innerHTML = `
+            <strong>Ticket #${item.ticket_id}</strong> ${item.action} by ${item.user}
+            <span class="activity-time">${item.time_ago}</span>
+          `;
+          list.appendChild(li);
+        });
+      });
+  }
+
+  // Load every 10 seconds
+  loadRecentActivity();
+  setInterval(loadRecentActivity, 10000);
+</script>
+{% endblock %}
