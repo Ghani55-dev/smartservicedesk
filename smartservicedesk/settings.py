@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-qt0!+k&3c*3*on3mf&h8i4)k6gghp_x3+fg+d#8-bcnb6g67u('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -139,7 +139,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'ganamunna143@gmail.com'
 EMAIL_HOST_PASSWORD = 'uggj yysu pgvr ccgs'  # Use App Password if 2FA
 DEFAULT_FROM_EMAIL = 'no-reply@smartdesk.com'
-
 
 
 

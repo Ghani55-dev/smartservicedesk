@@ -27,13 +27,24 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Flash Messages (for alerts/notifications) -->
             {% comment %} {% with messages = get_flashed_messages(with_categories=true) %} {% endcomment %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="mb-4 p-4 rounded-md bg-{{ category }}-100 border border-{{ category }}-200 text-{{ category }}-800">
-                            {{ message }}
+                 {% if messages %}
+                <div class="mb-6 space-y-3">
+                    {% for message in messages %}
+                        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                            {% if 'success' in message.tags %}
+                                <i class="fas fa-check-circle"></i>
+                            {% elif 'error' in message.tags %}
+                                <i class="fas fa-exclamation-circle"></i>
+                            {% elif 'warning' in message.tags %}
+                                <i class="fas fa-exclamation-triangle"></i>
+                            {% else %}
+                                <i class="fas fa-info-circle"></i>
+                            {% endif %}
+                            <span>{{ message }}</span>
                         </div>
                     {% endfor %}
-                {% endif %}
+                </div>
+            {% endif %}
             {% comment %} {% endwith %} {% endcomment %}
             
             {% block content %}{% endblock %}

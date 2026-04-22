@@ -21,11 +21,9 @@ def create_ticket(request):
             ticket.save()
 
             # Notify admin (update email accordingly)
-            send_ticket_notification(
-                subject="New Ticket Created",
-                message=f"A new ticket '{ticket.title}' has been created by {request.user.username}.",
-                recipient="ganaganiganesh5268@gmail.com"
-            )
+            # use helper which will format a creation message if the ticket has
+            # not yet been assigned.
+            send_ticket_notification(ticket, "ganaganiganesh5268@gmail.com")
             messages.success(request, "✅ Ticket submitted successfully. Our support team will address it shortly.")
             return redirect('ticket_list')
     else:
