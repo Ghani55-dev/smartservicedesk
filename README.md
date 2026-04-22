@@ -159,7 +159,7 @@ send_ticket_notification(
 
 ## Author
 
-**Ghani**  
+**Ganesh**  
 Full Stack Developer & DevOps Enthusiast
 
-For questions/support: [ghani@example.com](mailto:ghani@example.com)
+For questions/support: [ganamunna143@gmail.com](mailto:ganamunna143@gmail.com)
